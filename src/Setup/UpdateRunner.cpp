@@ -3,6 +3,7 @@
 #include "Resource.h"
 #include "UpdateRunner.h"
 #include <vector>
+#include <ctime>
 
 void CUpdateRunner::DisplayErrorMessage(CString& errorMessage, wchar_t* logFile)
 {
@@ -190,7 +191,24 @@ int CUpdateRunner::ExtractUpdaterAndRun(wchar_t* lpCommandLine, bool useFallback
 
 gotADir:
 
+	wchar_t subDir[MAX_PATH] = { 0 };
+	wchar_t sqTempDir[MAX_PATH] = { 0 };
+
+	srand((unsigned)time(0));
+	int randomNumber = rand();
+	_swprintf_c(subDir, _countof(subDir), L"%d", randomNumber);
+
+
 	wcscat_s(targetDir, _countof(targetDir), L"\\SquirrelTemp");
+	wcscpy_s(sqTempDir, targetDir);
+	wcscat_s(targetDir, _countof(targetDir), subDir);
+
+	while (!CreateDirectory(targetDir, NULL) && GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		randomNumber = rand();
+		_swprintf_c(subDir, _countof(subDir), L"%d", randomNumber);
+		_swprintf_c(targetDir, _countof(targetDir), L"%s%d", sqTempDir, subDir);
+	}
 
 	if (!CreateDirectory(targetDir, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) {
 		wchar_t err[4096];
